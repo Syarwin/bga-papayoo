@@ -1,0 +1,210 @@
+/**
+ *------
+ * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+ * papayoo implementation : © Guillaume NAVEL <guillaume.navel@gmail.com>
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ *
+ * papayoo.css
+ *
+ * papayoo stylesheet
+ *
+ */
+
+
+/** Table layout **/
+#gamezone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+#playertables {
+    position: relative;
+
+}
+
+#dicevalue {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  font-weight: bold;
+  text-align: center;
+  border-radius:10px;
+}
+#dicevalue.pending {
+  background-image:url("img/icon-shuffle.svg");
+  background-size:contain;
+  background-position:center center;
+}
+
+
+.player_info {
+    position: absolute;
+    left : 10px;
+    bottom: 10px;
+}
+
+.playertablename {
+    font-weight: bold;
+}
+
+.playertable {
+  position: absolute;
+  text-align: center;
+  border-radius:10px;
+}
+
+.playertablecard {
+    display: inline-block;
+    position: relative;
+    margin-top: 5px;
+    width: 72px;
+    height: 122px;
+}
+
+#myhand .stockitem {
+  border-radius:10px;
+  margin:5px;
+  border:1px solid grey;
+}
+
+#myhand .stockitem:hover {
+  cursor:pointer;
+  margin:4px;
+  border:2px solid black !important;
+}
+
+#myhand .stockitem_selected {
+  margin:3px;
+  transform:scale(1.02);
+  border:2px solid black !important;
+  box-shadow:1px 1px 5px black, 2px 2px 4px black;
+}
+
+#myhand .stockitem.disabled {
+  cursor:not-allowed;
+  opacity:0.5 !important;
+}
+#myhand .stockitem.disabled:hover {
+  cursor:not-allowed;
+  margin:5px;
+  border:1px solid gray !important;
+}
+
+/*** cards on table ***/
+
+.cardontable {
+    position: absolute;
+    width: 72px;
+    height: 122px;
+    background-image: url('img/cards.png');
+    background-size: 720px 732px;
+}
+
+
+.receivedCard {
+    box-shadow: 0px 0px 0px 3px red;
+    border-radius: 3px;
+}
+
+
+/*** dice ***/
+
+.camera{
+  width:200px;
+  height:200px;
+  perspective-origin:50% 50%;
+  perspective:500px;
+}
+.dice {
+  position:relative;
+  width:100%;
+  height:100%;
+  transform-style:preserve-3d;
+ 	transform-origin:center center -50px;
+	transition: 3s transform ease-in;
+}
+
+.dice div{
+  position:absolute;
+  width:0;
+  height:0;
+  border-width:0 50px 87px;
+  border-style:solid;
+	backface-visibility:hidden;
+}
+.dice div::before {
+	content:"";
+	position:absolute;
+	top:25px;
+	left:-30px;
+	display:block;
+	width:60px;
+	height:60px;
+	background-image:url("../img/dice.png");
+	background-size:200%;
+}
+.face1::before, .face5::before { background-position:0% 0%;}
+.face2::before, .face6::before { background-position:100% 0%;}
+.face3::before, .face7::before { background-position:0% 100%;}
+.face4::before, .face8::before { background-position:100% 100%;}
+
+
+
+.face1{
+    border-color:transparent transparent #e4007b;
+    transform-origin:center bottom;
+    transform:translateX(50px) translateY(50px) rotateX(35.36deg);
+}
+.face2{
+    border-color:transparent transparent #f6a901;
+    transform-origin:center bottom;
+    transform:rotateY(-90deg) translateY(50px) translateX(-50px) rotateX(35.36deg);
+}
+.face3{
+    border-color:transparent transparent #04478d;
+    transform-origin:center bottom;
+    transform:rotateY(-180deg) translateX(-50px) translateY(50px) translateZ(100px) rotateX(35.36deg);
+}
+.face4{
+    border-color:transparent transparent #fcea00;
+    transform-origin:center bottom;
+    transform:rotateY(90deg) translateX(50px) translateY(50px) translateZ(100px) rotateX(35.36deg);
+}
+
+
+.face5{
+    border-color:transparent transparent #e4007b;
+    transform-origin:center bottom;
+    transform:rotateX(180deg) translateY(-50px) translateZ(100px) translateX(50px) rotateX(35.36deg);
+}
+.face6{
+    border-color:transparent transparent #f6a901;
+    transform-origin:center bottom;
+    transform:rotateX(180deg) translateY(-50px) translateZ(100px) rotateY(90deg) translateX(50px) translateZ(100px) rotateX(35.36deg);
+}
+.face7{
+    border-color:transparent transparent #04478d;
+    transform-origin:center bottom;
+    transform:rotateX(180deg) translateY(-50px) translateZ(100px) rotateY(180deg) translateX(-50px) translateZ(100px) rotateX(35.36deg);
+}
+.face8{
+    border-color:transparent transparent #fcea00;
+    transform-origin:center bottom;
+    transform:rotateX(180deg) translateY(-50px) translateZ(100px) rotateY(-90deg) translateX(-50px) rotateX(35.36deg);
+}
+
+
+.dice[data-show='1'] { transform:rotateX(-35.36deg) rotateY(0deg) translateY(-50px); }
+.dice[data-show='2'] { transform:rotateX(-35.36deg) rotateY(90deg) translateY(-50px); }
+.dice[data-show='3'] { transform:rotateX(-35.36deg) rotateY(180deg) translateY(-50px); }
+.dice[data-show='4'] { transform:rotateX(-35.36deg) rotateY(270deg) translateY(-50px); }
+
+.dice[data-show='5'] { transform:rotateX(-215.36deg) rotateY(0deg) translateY(-50px); }
+.dice[data-show='6'] { transform:rotateX(-215.36deg) rotateY(90deg) translateY(-50px); }
+.dice[data-show='7'] { transform:rotateX(-215.36deg) rotateY(180deg) translateY(-50px); }
+.dice[data-show='8'] { transform:rotateX(-215.36deg) rotateY(270deg) translateY(-50px); }
