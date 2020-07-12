@@ -453,6 +453,9 @@ function stEndOfTrick()
 	if(is_null($best_value_player_id))
 		throw new feException( self::_("Error, nobody wins the trick") );
 
+	// Increase stat
+	self::incStat(1, "nbrOfTrick", $best_value_player_id);
+
 	// Compute score of trick
 	$diceColor = self::getGameStateValue('dice_color');
 	$score = 0;
