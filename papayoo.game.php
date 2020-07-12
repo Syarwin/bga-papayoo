@@ -458,10 +458,10 @@ function stEndOfTrick()
 	$score = 0;
 	foreach($cards_on_table as $card) {
 		if($card['type'] == $diceColor && $card['type_arg'] == 7) {
-			$score += 40; // papayoo = 40pts
+			$score -= 40; // papayoo = 40pts
 			self::incStat(1, "nbrOfPapayoo", $best_value_player_id);
 		} else if($card['type'] == 5) {
-			$score += $card['type_arg']; // Payoo value = pts
+			$score -= $card['type_arg']; // Payoo value = pts
 			 self::incStat(1, "nbrOfPayoo", $best_value_player_id);
 		} else {
 			// No point cards
