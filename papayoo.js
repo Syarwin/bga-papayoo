@@ -38,8 +38,8 @@ constructor: function(){
   this.card_hand_width = 90;
   this.card_hand_height = 152;
 
-  this.playertable_width = 105; // max 100
-  this.playertable_height = 140;
+  this.playertable_width = 130; // max 100
+  this.playertable_height = 165;
   this.margin = 20;
 
   this.playertables_width = Math.min(740, (this.playertable_width + this.margin*2.5)*5);
@@ -67,6 +67,7 @@ constructor: function(){
  *  - mixed gamedatas : contains all datas retrieved by the getAllDatas PHP method.
  */
 setup: function(gamedatas){
+  debug("SETUP:", gamedatas);
   this.nbr_cards_to_give = gamedatas.nbr_cards_to_give;
 
   // Add playertables div
@@ -75,19 +76,14 @@ setup: function(gamedatas){
     h: this.playertables_height,
   }), 'gamezone');
 
-  var diceColor = gamedatas.dice_color;
-  var dicetext = 'No papayoo';
-  if (diceColor != 0) {
-  dicetext = dojo.string.substitute(
-    _("Papayoo is 7${s}"), {s: gamedatas.dice_colors[diceColor]['symbole']});
-  }
-
   // Add dice div
+  dojo.place( '<div class="player-board" id="gameinfo"><div id="hand-counter"></div></div>', 'player_boards');
   dojo.place(this.format_block( 'jstpl_dicevalue', {
-      x: this.playertables_width/2-50 - this.margin,
-      y: this.playertables_height/2-15 - this.margin,
-      text: dicetext
-  }), 'playertables');
+      // x:this.playertables_width/2-100 - this.margin,
+      // y:this.playertables_height/2-100 - this.margin,
+      c: gamedatas.dice_color,
+  }), 'gameinfo');
+
 
   // Place payer zone
   this.players = gamedatas.players;
@@ -104,7 +100,7 @@ setup: function(gamedatas){
     dx = this.played_card_position[this.player_number][i-1][0];
     dy = this.played_card_position[this.player_number][i-1][1];
 
-    var x = this.playertables_width/2 +dx*size_dx - this.playertable_width/2 - this.margin;
+    var x = this.playertables_width/2 +dx*size_dx - this.playertable_width/2;
     var y = this.playertables_height/2 - dy*size_dy - this.playertable_height/2 - this.margin;
 
     dojo.place(this.format_block( 'jstpl_playertable', {
@@ -114,7 +110,7 @@ setup: function(gamedatas){
         y: y,
         player_id: player_id,
         player_color: player['player_color'],
-        player_name: player['player_name'],
+        player_name: (player['player_name'].length > 10? (player['player_name'].substr(0,10) + "...") : player['player_name']),
         nbr_of_tricks: player['nbr_of_tricks_win']
     } ), 'playertables');
 
@@ -162,7 +158,13 @@ setup: function(gamedatas){
 //  this.ensureSpecificImageLoading( ['../common/point.png'] );
 },
 
+updateGameInfos: function(){
+  for(var pId in this.gamedatas.players){
+    this.scoreCtrl[pId].toValue( this.gamedatas.players[pId].player_score);
+  }
 
+  $('hand-counter').innerHTML = this.gamedatas.handNbr + " / " + this.gamedatas.handTotal;
+},
 
 /*
  * onEnteringState:
@@ -173,16 +175,21 @@ setup: function(gamedatas){
  */
 onEnteringState: function (stateName, args) {
   debug('Entering state: ' + stateName, args);
-  if (!this.isCurrentPlayerActive()) return;
+  this.updateGameInfos();
 
   if(stateName == 'giveCards'){
+    if (!this.isCurrentPlayerActive()) return;
     this.addTooltip( 'myhand', _('Cards in my hand'), _('Select a card') );
+    dojo.addClass("playertablecard_" + args.args.dealer, "dealer");
   }
 
   else if(stateName == 'playerTurn'){
+    dojo.addClass("playertable-" + args.args.pId, "active");
+    if (!this.isCurrentPlayerActive()) return;
+
     this.addTooltip( 'myhand', _('Cards in my hand'), _('Play a card') );
     dojo.query("#myhand .stockitem").addClass("disabled");
-    args.args.cards.forEach(card => dojo.removeClass('myhand_item_' + card.id, "disabled"));
+    args.args._private.cards.forEach(card => dojo.removeClass('myhand_item_' + card.id, "disabled"));
   }
 },
 
@@ -196,6 +203,8 @@ onEnteringState: function (stateName, args) {
 onLeavingState: function (stateName) {
   debug('Leaving state: ' + stateName);
   dojo.query("#myhand .stockitem").removeClass("disabled");
+  dojo.query(".playertable").removeClass("active");
+  dojo.query(".playertablecard").removeClass("dealer");
 },
 
 
@@ -218,6 +227,7 @@ onUpdateActionButtons: function (stateName, args,) {
 ////////////////////////////////
 onPlayerHandSelectionChanged: function(control_name, item_id)
 {
+  if(typeof item_id == "undefined") return;
   var state = this.gamedatas.gamestate.name;
   var items = this.playerHand.getSelectedItems();
 
@@ -234,34 +244,57 @@ onPlayerHandSelectionChanged: function(control_name, item_id)
       this.addActionButton( 'giveCards_button', _('Give selected cards'), 'onGiveCards' );
   }
 
+  else if(state == "playerTurn"){
+    this.playerHand.unselectAll();
+    if(!this.checkAction('playCard', true))
+      return;
+    if(dojo.hasClass('myhand_item_' + item_id, 'disabled'))
+      return;
 
-    if( items.length > 0 )
-    {
-        if( this.checkAction( 'playCard', true ) )
-        {
-            // Can play a card
-
-            var card_id = items[0].id;
-
-            this.ajaxcall( "/papayoo/papayoo/playCard.html", {
-                    id: card_id,
-                    lock: true
-                    }, this, function( result ) {  }, function( is_error) { } );
-
-            this.playerHand.unselectAll();
-            dojo.query('.stockitem').removeClass('receivedCard');
-        }
-        else if( this.checkAction( 'giveCards' ) )
-        {
-            // Can give cards => let the player select some cards
-        }
-        else
-        {
-            this.playerHand.unselectAll();
-        }
-    }
+    this.takeAction("playCard", { id: item_id })
+//            dojo.query('.stockitem').removeClass('receivedCard');
+  }
 },
 
+
+
+onGiveCards: function(){
+  if(!this.checkAction('giveCards'))
+    return;
+
+  var items = this.playerHand.getSelectedItems();
+  // Should be useless now
+  if(items.length != this.nbr_cards_to_give){
+    this.showMessage(dojo.string.substitute(_("You must select exactly ${n} cards"), {n: this.nbr_cards_to_give}), 'error');
+    return;
+  }
+
+  this.takeAction("giveCards", {
+    cards: items.map(item => item.id).join(';')
+  });
+},
+
+
+notif_giveCards: function( notif )
+{
+  // Remove cards from the hand (they have been given)
+  for( var i in notif.args.cards ){
+    var card_id = notif.args.cards[i];
+    this.playerHand.removeFromStockById( card_id );
+  }
+},
+
+notif_takeCards: function( notif )
+{
+  // Cards taken from some opponent
+  for( var i in notif.args.cards){
+    var card = notif.args.cards[i];
+    var color = card.type;
+    var value = card.type_arg;
+    this.playerHand.addToStockWithId( this.getCardUniqueId( color, value ), card.id );
+    dojo.addClass(this.playerHand.getItemDivId(card.id), 'receivedCard');
+  }
+},
 
 
 ////////////////////////////////
@@ -270,6 +303,13 @@ onPlayerHandSelectionChanged: function(control_name, item_id)
 ////////////////////////////////
 ////////////////////////////////
 
+takeAction: function (action, data, callback) {
+  data = data || {};
+  data.lock = true;
+  callback = callback || function (res) { };
+  this.ajaxcall("/papayoo/papayoo/" + action + ".html", data, this, callback);
+},
+
 // Get card unique identifier based on its color and value
 getCardUniqueId: function( color, value )
 {
@@ -277,187 +317,120 @@ getCardUniqueId: function( color, value )
 },
 
 
-        playCardOnTable: function( player_id, color, value, card_id )
-        {
-            // player_id => direction
-            var card_type_id = this.getCardUniqueId(color, value);
-            dojo.place(
-                this.format_block( 'jstpl_cardontable', {
-                    x: this.card_board_width*(card_type_id%10),
-                    y: this.card_board_height*(Math.floor(card_type_id/10)),
-                    player_id: player_id
-                } ), 'playertablecard_'+player_id );
+playCardOnTable: function(player_id, color, value, card_id){
+  // player_id => direction
+  var card_type_id = this.getCardUniqueId(color, value);
+  dojo.place(this.format_block( 'jstpl_cardontable', {
+    x: this.card_board_width*(card_type_id%10),
+    y: this.card_board_height*(Math.floor(card_type_id/10)),
+    player_id: player_id
+  }), 'playertablecard_'+player_id );
+
+  // Some opponent played a card : move card from player panel
+  if( player_id != this.player_id )
+    this.placeOnObject( 'cardontable_'+player_id, 'overall_player_board_'+player_id );
+  // You played a card. If it exists in your hand, move card from there and remove corresponding item
+  else {
+    if($('myhand_item_'+card_id)){
+      this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id );
+      this.playerHand.removeFromStockById( card_id );
+    }
+  }
+
+  // In any case: move it to its final destination
+  this.slideToObject( 'cardontable_'+player_id, 'playertablecard_'+player_id ).play();
+},
+
+
+notif_newScores: function(n){
+  debug("Notif: updating scores", n);
+  n.args.scores.forEach(player => this.gamedatas.players[player.id].player_score = player.score );
+  this.updateGameInfos();
+},
+
+
+///////////////////////////////////////////////////
+//////   Reaction to cometD notifications   ///////
+///////////////////////////////////////////////////
+
+/*
+ * setupNotifications:
+ *  In this method, you associate each of your game notifications with your local method to handle it.
+ *	Note: game notification names correspond to "notifyAllPlayers" and "notifyPlayer" in the santorini.game.php file.
+ */
+setupNotifications: function () {
+  var notifs = [
+    ['newHand', 1],
+    ['startingNewHand', 1],
+    ['playCard', 1000],
+    ['giveAllCardsToPlayer', 1000],
+    ['newScores', 1],
+    ['giveCards', 1],
+    ['takeCards', 1],
+    ['throwDice', 3000],
+  ];
+
+  var _this = this;
+  notifs.forEach(function (notif) {
+    dojo.subscribe(notif[0], _this, "notif_" + notif[0]);
+    _this.notifqueue.setSynchronous(notif[0], notif[1]);
+  });
+},
 
 
 
-            if( player_id != this.player_id )
-            {
-                // Some opponent played a card
-                // Move card from player panel
-                this.placeOnObject( 'cardontable_'+player_id, 'overall_player_board_'+player_id );
-            }
-            else
-            {
-                // You played a card. If it exists in your hand, move card from there and remove
-                // corresponding item
 
-                if( $('myhand_item_'+card_id) )
-                {
-                    this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id );
-                    this.playerHand.removeFromStockById( card_id );
-                }
-            }
+notif_newHand: function(n){
+  // We received a new full hand of 13 cards.
+  debug("Notif : new hand", n);
 
-            // In any case: move it to its final destination
-            this.slideToObject( 'cardontable_'+player_id, 'playertablecard_'+player_id ).play();
+  this.playerHand.removeAll();
+  n.args.cards.forEach(card => {
+    var color = card.type;
+    var value = card.type_arg;
+    this.playerHand.addToStockWithId( this.getCardUniqueId(color, value), card.id);
+  });
+},
 
-        },
+notif_startingNewHand: function(n){
+  dojo.query(".playertable .player_info").forEach(div => div.innerHTML = "0");
+  this.gamedatas.handNbr = n.args.handNbr;
+  this.updateGameInfos();
+},
 
 
-        ///////////////////////////////////////////////////
-        //// Player's action
+notif_throwDice: function(n){
+  debug("Notif : new value for the dice", n);
+  if(n.args.dice_value == 0)
+    dojo.attr('dicevalue', 'data-value', '0');
+  else {
+    dojo.attr('dicevalue', 'data-value', n.args.dice_value + 4);
+    dojo.addClass("dicevalue", "roll");
+    setTimeout( () => {
+      dojo.attr('dicevalue', 'data-value', n.args.dice_value);
+      dojo.removeClass("dicevalue", "roll");
+    }, 2000);
+  }
+},
 
-        /*
 
-            Here, you are defining methods to handle player's action (ex: results of mouse click on
-            game objects).
+notif_playCard: function( notif ){
+  // Play a card on the table
+  this.playCardOnTable( notif.args.player_id, notif.args.color, notif.args.value, notif.args.card_id );
+},
 
-            Most of the time, these methods:
-            _ check the action is possible at this game state.
-            _ make a call to the game server
+notif_giveAllCardsToPlayer: function(n){
+  debug("Notif: trick is finished", n);
+  var winner_id = n.args.player_id;
 
-        */
+  // Move all cards on table to given table, then destroy them
+  for(var player_id in this.gamedatas.players){
+    this.slideToObjectAndDestroy('cardontable_'+player_id, 'player_nbr_trick_'+winner_id );
+  }
+  $('player_nbr_trick_'+winner_id).innerHTML = n.args.nbr_of_tricks;
+  this.displayScoring( 'player_nbr_trick_' + winner_id, this.gamedatas.players[winner_id].color, n.args.score, 1000);
+},
 
 
-
-        onGiveCards: function()
-        {
-            if( this.checkAction( 'giveCards' ) )
-            {
-                var items = this.playerHand.getSelectedItems();
-
-                if( items.length != this.nbr_cards_to_give)
-                {
-                    this.showMessage(dojo.string.substitute(
-                            _("You must select exactly ${n} cards"), {n: this.nbr_cards_to_give})
-                            , 'error');
-                    return;
-                }
-
-                // Give these cards
-                var to_give = '';
-                for( var i in items )
-                {
-                    to_give += items[i].id+';';
-                }
-                this.ajaxcall( "/papayoo/papayoo/giveCards.html", { cards: to_give, lock: true }, this, function( result ) {
-                }, function( is_error) { } );
-            }
-        },
-
-        ///////////////////////////////////////////////////
-        //// Reaction to cometD notifications
-
-        /*
-            setupNotifications:
-
-            In this method, you associate each of your game notifications with your local method to handle it.
-
-            Note: game notification names correspond to your "notifyAllPlayers" and "notifyPlayer" calls in
-                  your emptygame.game.php file.
-
-        */
-
-        setupNotifications: function()
-        {
-            dojo.subscribe( 'newHand', this, "notif_newHand" );
-            dojo.subscribe( 'playCard', this, "notif_playCard" );
-            dojo.subscribe( 'trickWin', this, "notif_trickWin" );
-            this.notifqueue.setSynchronous( 'trickWin', 1000 );
-            dojo.subscribe( 'giveAllCardsToPlayer', this, "notif_giveAllCardsToPlayer" );
-            dojo.subscribe( 'newScores', this, "notif_newScores" );
-            dojo.subscribe( 'giveCards', this, "notif_giveCards" );
-            dojo.subscribe( 'takeCards', this, "notif_takeCards" );
-            dojo.subscribe( 'throwDice', this, "notif_throwDice" );
-        },
-
-        // TODO: from this point and below, you can write your game notifications handling methods
-
-        notif_newHand: function( notif )
-        {
-            // We received a new full hand of 13 cards.
-            this.playerHand.removeAll();
-
-            for( var i in notif.args.cards )
-            {
-                var card = notif.args.cards[i];
-                var color = card.type;
-                var value = card.type_arg;
-                this.playerHand.addToStockWithId( this.getCardUniqueId( color, value ), card.id );
-            }
-        },
-
-        notif_playCard: function( notif )
-        {
-            // Play a card on the table
-            this.playCardOnTable( notif.args.player_id, notif.args.color, notif.args.value, notif.args.card_id );
-        },
-        notif_trickWin: function( notif )
-        {
-            // We do nothing here (just wait in order players can view the 4 cards played before they're gone.
-        },
-        notif_giveAllCardsToPlayer: function( notif )
-        {
-            // Move all cards on table to given table, then destroy them
-            var winner_id = notif.args.player_id;
-            for( var player_id in this.gamedatas.players )
-            {
-                var anim = this.slideToObject( 'cardontable_'+player_id, 'player_nbr_trick_'+winner_id );
-                dojo.connect( anim, 'onEnd', function( node ) { dojo.destroy(node);  } );
-                anim.play();
-            }
-            $('player_nbr_trick_'+winner_id).innerHTML = notif.args.nbr_of_tricks;
-        },
-        notif_newScores: function( notif )
-        {
-            // Update players' scores
-
-            for( var player_id in notif.args.newScores )
-            {
-                this.scoreCtrl[ player_id ].toValue( notif.args.newScores[ player_id ] );
-                $('player_nbr_trick_'+player_id).innerHTML = 0;
-            }
-        },
-        notif_giveCards: function( notif )
-        {
-            // Remove cards from the hand (they have been given)
-            for( var i in notif.args.cards )
-            {
-                var card_id = notif.args.cards[i];
-                this.playerHand.removeFromStockById( card_id );
-            }
-        },
-        notif_takeCards: function( notif )
-        {
-            // Cards taken from some opponent
-            for( var i in notif.args.cards )
-            {
-                var card = notif.args.cards[i];
-                var color = card.type;
-                var value = card.type_arg;
-                this.playerHand.addToStockWithId( this.getCardUniqueId( color, value ), card.id );
-                dojo.query('#'+this.playerHand.getItemDivId(card.id)).addClass('receivedCard');
-            }
-        },
-        notif_throwDice: function( notif )
-        {
-            // Cards taken from some opponent
-            if (notif.args.dice_value != 0){
-                $('dicevalue').innerHTML = dojo.string.substitute(
-                            _("Papayoo is 7${s}"), {s: notif.args.dice_symbole});
-            } else {
-                $('dicevalue').innerHTML = "";
-            }
-        }
-   });
+  });
 });

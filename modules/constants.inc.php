@@ -12,6 +12,7 @@ define('ST_THROW_DICE', 23);
 define('ST_NEW_TRICK', 30);
 define('ST_PLAY_CARD', 31);
 define('ST_NEXT_PLAYER', 32);
+define('ST_END_OF_TRICK', 33);
 
 define('ST_END_HAND', 40);
 

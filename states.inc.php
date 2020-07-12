@@ -86,7 +86,7 @@ $machinestates = [
     "type" => "activeplayer",
     "args" => "argPlayCard",
     "possibleactions" => [ "playCard" ],
-    "transitions" => [ "playCard" => ST_NEXT_PLAYER ]
+    "transitions" => [ "cardPlayed" => ST_NEXT_PLAYER ]
   ],
   ST_NEXT_PLAYER => [
     "name" => "nextPlayer",
@@ -95,6 +95,15 @@ $machinestates = [
     "action" => "stNextPlayer",
     "transitions" => [
       "nextPlayer" => ST_PLAY_CARD,
+      "endTrick" => ST_END_OF_TRICK,
+    ]
+  ],
+  ST_END_OF_TRICK => [
+    "name" => "endOfTrick",
+    "description" => "",
+    "type" => "game",
+    "action" => "stEndOfTrick",
+    "transitions" => [
       "nextTrick" => ST_NEW_TRICK,
       "endHand" => ST_END_HAND
     ]

@@ -10,6 +10,7 @@
 -- dbmodel.sql
 
 ALTER TABLE `player` ADD `nbr_of_tricks_win` int(11) NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `hand_points` int(11) NOT NULL DEFAULT '0';
 
 CREATE TABLE IF NOT EXISTS `card` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
