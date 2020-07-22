@@ -19,9 +19,9 @@ $game_options = [
     'name' => totranslate('Number of hands to play'),
     'values' => [
       JUST_ONE => ['name' => totranslate( 'Just one hand' )],
-      ONE_PER_PLAYER => ['name' => totranslate( 'One time the number of player' ) ],
-      TWO_PER_PLAYER => ['name' => totranslate( 'Two time the number of player' ) ],
-      THREE_PER_PLAYER => ['name' => totranslate( 'Three time the number of player' )],
+      ONE_PER_PLAYER => ['name' => totranslate( 'One time the number of players' ) ],
+      TWO_PER_PLAYER => ['name' => totranslate( 'Two time the number of players' ) ],
+      THREE_PER_PLAYER => ['name' => totranslate( 'Three time the number of players' )],
     ],
     'default' => ONE_PER_PLAYER
   ]

@@ -13,17 +13,26 @@
  *
  */
 
-#gameinfo {
-  height:100px !important;
+#game_play_area {
   position:relative;
+}
+
+#gameinfo {
+  width:150px;
+  height:80px !important;
+  position:absolute;
+  top:0;
+  left:2px;
   display: flex;
-  justify-content: right;
+  justify-content: flex-end;
   align-items: center;
+  border-radius:8px;
+  border:1px solid #444;
 }
 
 #hand-counter {
-  font-size:2em;
-  margin-right:0.8em;
+  font-size:1.5em;
+  margin-right:10px;
 }
 
 /** Table layout **/
@@ -40,12 +49,16 @@
   background-size:70px;
   background-position:center center;
   background-repeat:no-repeat;
+  background-color: #35714a;
+  border-radius: 30px;
+  box-shadow: 2px 2px 5px black;
+  border: 1px solid #193b27;
 }
 
 #dicevalue {
   position: absolute;
-  top:-55px;
-  left:-55px;
+  top:-67px;
+  left:-69px;
   width: 200px;
   height: 200px;
   background:none;
@@ -69,9 +82,11 @@
   border-radius:10px;
   border:1px solid black;
   box-sizing: border-box;
+  background-color:rgba(255,255,255,0.7);
+  padding:10px;
 }
 .playertable.active {
-  border:2px solid red;
+  border:2px solid orange;
 }
 .playertablecard.dealer {
   background-image:url("img/dice.svg");
@@ -145,7 +160,7 @@
   height:200px;
   perspective-origin:50% 50%;
   perspective:500px;
-  transform:scale(0.8);
+  transform:scale(0.6);
 }
 .dice {
   position:relative;
@@ -239,6 +254,7 @@
     transform:rotateX(180deg) translateY(-50px) translateZ(100px) rotateY(-90deg) translateX(-50px) rotateX(35.36deg);
 }
 
+#dicevalue[data-value='0'] { opacity:0.3; }
 #dicevalue[data-value='0'] .dice { transform:rotateX(-20deg) rotateY(110deg) translateY(-50px); }
 
 #dicevalue[data-value='1'] .dice { transform:rotateX(-35.36deg) rotateY(270deg) translateY(-50px); }

@@ -10,7 +10,7 @@
 var jstpl_playertables = '<div id="playertables" style="width: ${w}px; height: ${h}px;"></div>';
 
 var jstpl_playertable = `
-<div id="playertable-\${player_id}" class="playertable whiteblock" style="width:\${w}px; height:\${h}px; left: \${x}px; bottom: \${y}px;">
+<div id="playertable-\${player_id}" class="playertable" style="width:\${w}px; height:\${h}px; left: \${x}px; bottom: \${y}px;">
   <div class="playertablename" style="color:#\${player_color}">
     \${player_name}
   </div>

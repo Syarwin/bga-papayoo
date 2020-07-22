@@ -53,8 +53,8 @@ constructor: function(){
   this.played_card_position[4] = [[0, 0.75], [-1.2, 0], [0, -0.75], [1.2, 0]];
   this.played_card_position[5] = [[0, 0.75], [-1.2, 0.4], [-0.75, -0.75], [0.75, -0.75], [1.2, 0.4]];
   this.played_card_position[6] = [[0, 0.75], [-1.2, 0.5], [-1.2, -0.5], [0, -0.75], [1.2, -0.5], [1.2, 0.5]];
-  this.played_card_position[7] = [[0, 0.75], [-1, 0.5], [-2, 0], [-0.75, -0.75], [0.75, -0.75], [2, 0], [1, 0.5]];
-  this.played_card_position[8] = [[0, 0.75], [-1, 0.5], [-2, 0], [-1, -0.5], [0, -0.75], [1, -0.5], [2, 0], [1, 0.5]];
+  this.played_card_position[7] = [[0, 0.75], [-0.8, 0.5], [-1.6, 0], [-0.6, -0.75], [0.6, -0.75], [1.6, 0], [0.8, 0.5]];
+  this.played_card_position[8] = [[0, 0.75], [-0.8, 0.5], [-1.6, 0], [-0.8, -0.5], [0, -0.75], [0.8, -0.5], [1.6, 0], [0.8, 0.5]];
 },
 
 
@@ -77,7 +77,7 @@ setup: function(gamedatas){
   }), 'gamezone');
 
   // Add dice div
-  dojo.place( '<div class="player-board" id="gameinfo"><div id="hand-counter"></div></div>', 'player_boards');
+  dojo.place( '<div class="player-board" id="gameinfo"><div id="hand-counter"></div></div>', 'gamezone');
   dojo.place(this.format_block( 'jstpl_dicevalue', {
       // x:this.playertables_width/2-100 - this.margin,
       // y:this.playertables_height/2-100 - this.margin,
@@ -94,7 +94,11 @@ setup: function(gamedatas){
   var size_dx = this.playertable_width + this.margin*2;
   var size_dy = this.playertable_height + this.margin*2;
 
+  var ids = Object.keys(this.players);
   var player_id = gamedatas.current_player_id;
+  if(!ids.includes(player_id))
+    player_id = ids[0];
+
   for(var i = 1; i <= this.player_number; i++) {
     var player = this.players[player_id];
     dx = this.played_card_position[this.player_number][i-1][0];
@@ -160,7 +164,7 @@ setup: function(gamedatas){
 
 updateGameInfos: function(){
   for(var pId in this.gamedatas.players){
-    this.scoreCtrl[pId].toValue( this.gamedatas.players[pId].player_score);
+    this.scoreCtrl[pId].toValue( this.gamedatas.players[pId].score);
   }
 
   $('hand-counter').innerHTML = this.gamedatas.handNbr + " / " + this.gamedatas.handTotal;
@@ -214,6 +218,10 @@ onLeavingState: function (stateName) {
  *  in this method you can manage "action buttons" that are displayed in the action status bar (ie: the HTML links in the status bar).
  */
 onUpdateActionButtons: function (stateName, args,) {
+  this.removeActionButtons();
+  var items = this.playerHand.getSelectedItems()
+  if(items.length == this.gamedatas.nbr_cards_to_give)
+    this.addActionButton( 'giveCards_button', _('Give selected cards'), 'onGiveCards' );
 },
 
 
@@ -344,7 +352,7 @@ playCardOnTable: function(player_id, color, value, card_id){
 
 notif_newScores: function(n){
   debug("Notif: updating scores", n);
-  n.args.scores.forEach(player => this.gamedatas.players[player.id].player_score = player.score );
+  n.args.scores.forEach(player => this.gamedatas.players[player.id].score = player.score );
   this.updateGameInfos();
 },
 

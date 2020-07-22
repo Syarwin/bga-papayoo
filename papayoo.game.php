@@ -151,7 +151,7 @@ protected function getAllDatas()
 
 	// Get information about players
 	// Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-	$sql = "SELECT player_id, player_score, player_color, player_name, nbr_of_tricks_win FROM player ";
+	$sql = "SELECT player_id id, player_score score, player_color, player_name, nbr_of_tricks_win FROM player ";
 	$result['players'] = self::getCollectionFromDb( $sql );
 	$result['current_player_id'] = self::getCurrentPlayerId();
 	$result['next_players_id'] = self::createNextPlayerTable(array_keys(self::loadPlayersBasicInfos()));
@@ -332,6 +332,7 @@ function stThrowDice()
 {
 	$dice_value = self::throwDice();
 	self::notifyAllPlayers( 'throwDice', clienttranslate('The dice value is ${dice_name} ${dice_symbole}'), [
+		'i18n' => ['dice_name'],
 		'dice_value' => $dice_value,
 		'dice_name' => $this->dice_colors[$dice_value]['name'],
 		'dice_symbole' => $this->dice_colors[$dice_value]['symbole'],
