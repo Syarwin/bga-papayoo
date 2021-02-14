@@ -132,6 +132,10 @@
   border:1px solid gray !important;
 }
 
+.spectatorMode #myhand_wrap {
+  display: none;
+}
+
 /*** cards on table ***/
 
 .cardontable {

@@ -182,18 +182,35 @@ onEnteringState: function (stateName, args) {
   this.updateGameInfos();
 
   if(stateName == 'giveCards'){
+    this.playerHand.setSelectionMode(2);
+
     if (!this.isCurrentPlayerActive()) return;
     this.addTooltip( 'myhand', _('Cards in my hand'), _('Select a card') );
     dojo.addClass("playertablecard_" + args.args.dealer, "dealer");
   }
 
   else if(stateName == 'playerTurn'){
+    this.playerHand.setSelectionMode(1);
+
     dojo.addClass("playertable-" + args.args.pId, "active");
     if (!this.isCurrentPlayerActive()) return;
 
     this.addTooltip( 'myhand', _('Cards in my hand'), _('Play a card') );
-    dojo.query("#myhand .stockitem").addClass("disabled");
-    args.args._private.cards.forEach(card => dojo.removeClass('myhand_item_' + card.id, "disabled"));
+    this.enableAllowedCards(args.args._private.cards);
+
+    if (this.playerHand.getSelectedItems().length === 1) {
+      var selectedCardId = this.playerHand.getSelectedItems()[0].id;
+      if (!args.args._private.cards.find(card => parseInt(card.id) === selectedCardId)) {
+        if (this.isInterfaceLocked()) {
+          this.playerHand.unselectAll();
+        }
+        else {
+          this.onPlayerHandSelectionChanged(null, selectedCardId);
+        }
+      }
+    }
+  } else if (stateName == 'endOfTrick') {
+    dojo.query("#myhand .stockitem").removeClass("disabled");
   }
 },
 
@@ -206,9 +223,12 @@ onEnteringState: function (stateName, args) {
  */
 onLeavingState: function (stateName) {
   debug('Leaving state: ' + stateName);
-  dojo.query("#myhand .stockitem").removeClass("disabled");
   dojo.query(".playertable").removeClass("active");
   dojo.query(".playertablecard").removeClass("dealer");
+
+  if(stateName == 'giveCards') {
+    this.playerHand.unselectAll();
+  }
 },
 
 
@@ -253,7 +273,6 @@ onPlayerHandSelectionChanged: function(control_name, item_id)
   }
 
   else if(state == "playerTurn"){
-    this.playerHand.unselectAll();
     if(!this.checkAction('playCard', true))
       return;
     if(dojo.hasClass('myhand_item_' + item_id, 'disabled'))
@@ -356,6 +375,18 @@ notif_newScores: function(n){
   this.updateGameInfos();
 },
 
+enableAllowedCards: function (cards) {
+  this.playerHand.items.map(item => Number(item.id)).forEach((id) => {
+      try {
+          var disallowed = cards.map(card => Number(card.id)).indexOf(id) === -1;
+          dojo.toggleClass('myhand_item_' + id, 'disabled', disallowed);
+          if (disallowed) {
+              this.playerHand.unselectItem('' + id);
+          }
+      }
+      catch (e) { }
+  });
+},
 
 ///////////////////////////////////////////////////
 //////   Reaction to cometD notifications   ///////
@@ -370,6 +401,7 @@ setupNotifications: function () {
   var notifs = [
     ['newHand', 1],
     ['startingNewHand', 1],
+    ['allowedCards', 1],
     ['playCard', 1000],
     ['giveAllCardsToPlayer', 1000],
     ['newScores', 1],
@@ -406,6 +438,9 @@ notif_startingNewHand: function(n){
   this.updateGameInfos();
 },
 
+notif_allowedCards: function(n){
+  this.enableAllowedCards(n.args.allowedCards);
+},
 
 notif_throwDice: function(n){
   debug("Notif : new value for the dice", n);
