@@ -31,13 +31,16 @@ $machinestates = [
     "type" => "game",
     "action" => "stNewHand",
     "updateGameProgression" => true,
-    "transitions" => [ "" => ST_GIVE_CARDS]
+    "transitions" => [
+      "play" => ST_THROW_DICE,
+      "give" => ST_GIVE_CARDS,
+    ],
   ],
 
   ST_GIVE_CARDS => [
     "name" => "giveCards",
-    "description" => clienttranslate('Some players must choose ${nbr_cards} cards to give to next player'),
-    "descriptionmyturn" => clienttranslate('${you} must choose ${nbr_cards} cards to give to next player'),
+    "description" => clienttranslate('Some players must choose ${nbr_cards} cards to give to player at position +${n}'),
+    "descriptionmyturn" => clienttranslate('${you} must choose ${nbr_cards} cards to give to player at position +${n}'),
     "type" => "multipleactiveplayer",
     "action" => "stGiveCards",
     "args" => "argGiveCards",

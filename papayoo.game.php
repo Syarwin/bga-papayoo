@@ -34,6 +34,7 @@ class papayoo extends Table
 			"number_of_deals" => 15, // Number of deal in the game
 
 			"nbr_deals_mode" => 100, // Number of deals mode
+      "shifting_discards" => 101, // Shifting discards variant
 		]);
 
 		// Init deck of cards
@@ -246,10 +247,19 @@ function stNewHand()
 	$this->gamestate->changeActivePlayer($next_player);
 	self::setGameStateValue('dealer_id', $next_player);
 
-	$this->gamestate->nextState("");
+  $offset = $this->getShiftingOffset();
+  $this->gamestate->nextState($offset === 0? 'play' : 'give');
 }
 
-
+function getShiftingOffset()
+{
+  $n = self::getStat("handNbr");
+  $variant = self::getGameStateValue('shifting_discards');
+  if($variant == SHIFTING_ON)
+    return ($n % self::getPlayersNumber());
+  else
+    return 1;
+}
 
 ///////////////////////////////
 ///////// Give Cards //////////
@@ -267,6 +277,7 @@ function argGiveCards()
 	$game_config = $this->game_configs[self::getPlayersNumber()];
 	return [
 		"nbr_cards" => $game_config['nbr_cards_to_pass'],
+    "n" => $this->getShiftingOffset(),
 		"dealer" => self::getGameStateValue('dealer_id')
 	];
 }
@@ -294,7 +305,10 @@ function giveCards($card_ids)
 	// To which player should I give these cards ?
 	$players = self::loadPlayersBasicInfos();
 	$nextPlayerList = self::createNextPlayerTable(array_keys($players));
-	$nextPlayer_id = $nextPlayerList[$player_id];
+	$nextPlayer_id = $player_id;
+  for($i = 0; $i < $this->getShiftingOffset(); $i++){
+    $nextPlayer_id = $nextPlayerList[$nextPlayer_id];
+  }
 	if( !isset($nextPlayer_id))
 		throw new feException(self::_("Next player doesn't existe"));
 

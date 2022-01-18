@@ -24,5 +24,13 @@ $game_options = [
       THREE_PER_PLAYER => ['name' => totranslate( 'Three time the number of players' )],
     ],
     'default' => ONE_PER_PLAYER
+  ],
+
+  OPTIONS_SHIFTING_DISCARD => [
+    'name' => totranslate('Shifting discard (variant)'),
+    'value' => [
+      SHIFTING_OFF => ['name' => totranslate('Disabled')],
+      SHIFTING_ON => ['name' => totranslate('Enabled'), 'tmdisplay' => totranslate("Shifting discards"), "description" => totranslate("Discarded cards are given to a different player on each turn starting on the left then going around clockwise")]
+    ]
   ]
 ];
