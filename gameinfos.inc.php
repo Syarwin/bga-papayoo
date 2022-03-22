@@ -39,7 +39,11 @@ $gameinfos = [
     'max' => null
   ],
 
-  'presentation' => [],
+  'presentation' => [
+    totranslate('Get rid of your Payoo!'),
+    totranslate('There are no jacks, queens or kings in Papayoo – just an unusual die and a fifth suit called Payoo. The aim is to score the fewest points possible; to do so, try to avoid collecting those dreadful Payoos and especially the Papayoo, that confounded 7, whose suit changes with each new hand. That cursed die!'),
+    totranslate("If you are unhappy with your hand, don't fret; just give your hand to the player on your left before starting. Be sure to make the right choice because you'll be getting the player's cards on your right. Then play your hand with no trumps or qualms. The best player doesn't always win!")
+  ],
   'tags' => [2, 11, 200],
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
